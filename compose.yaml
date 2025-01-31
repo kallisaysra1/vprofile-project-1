@@ -1,0 +1,55 @@
+services: # the containers that we want
+   vprodb: #name of the container
+      build: #building it from the docker file, so here we are providing the specific information
+         context: ./Docker-files/db #context means the docker file location of the db 
+      image: kallisaysra1/vprofiledb #docker hub account name with repository
+      container_name: vprodb
+      ports:
+         - "3306:3306"
+      volumes:
+         - vprodbdata:/var/lib/mysql # vprodbdata taken from the volumes and given a location in the host machine
+      environment:
+          - MYSQL_ROOT_PASSWORD=vprodbpass
+
+   vprocache01: #name of the container
+      image: memcached
+      container_name: vprocache01
+      ports:
+        - "11211:11211"
+    
+   vpromq01:
+      image: rabbitmq
+      ports:
+        -"5672:5672"
+      environment:
+        - RABBITMQ_DEFAULT_USER=guest
+        - RABBITMQ_DEFAULT_PASS=guest
+        #the above details are according to the application.properties file
+
+
+   vproapp01:
+      build:
+         context: .Docker-files/app
+      image: kallisaysra1/vprofileapp
+      container_name: vproapp01
+      ports:
+        - "8080:8080"
+      volumes:
+        - vproappdata: /usr/local/tomcat/webapps
+
+   vproweb:
+      build:
+         context: .Docker-files/web
+      image: kallisaysra1/vprofileweb
+      container_name: vproweb
+      ports:
+        - "80:80"
+      volumes:
+        - vproappdata: /usr/local/tomcat/webapps
+  
+      
+
+volumes:
+   vprodbdata: {} # with the db
+   vproappdata: {} # with the app
+#creating volumes in the host machine
